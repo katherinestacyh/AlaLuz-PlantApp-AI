@@ -10,8 +10,8 @@ export default function HomeScreen({ navigation }) {
         onPress={() => navigation.navigate('Plant Library')}
       />
       <Button
-        title="Go to Care Schedule"
-        onPress={() => navigation.navigate('Care Schedule')}
+        title="Go to My Garden"
+        onPress={() => navigation.navigate('My Garden')}
       />
       <Button
         title="Go to AI Chat"

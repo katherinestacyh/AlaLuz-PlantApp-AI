@@ -2,6 +2,9 @@ import React, { useState } from 'react';
 import { View, Text, Button, Image, ActivityIndicator, StyleSheet } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import * as FileSystem from 'expo-file-system';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { Alert } from 'react-native';
+
 
 export default function PlantLibraryScreen() {
     const [image, setImage] = useState(null);
@@ -50,12 +53,45 @@ export default function PlantLibraryScreen() {
             }
 
             const data = await response.json();
-            console.log("API Response Data:", data); // Log the response data
             setPlantInfo(data);
+            promptSavePlant(data);
         } catch (error) {
             console.error("Error identifying plant:", error);
         } finally {
             setLoading(false);
+        }
+    };
+
+    const promptSavePlant = async (data) => {
+        Alert.alert(
+            "Save Plant",
+            "Would you like to add this plant to your garden?",
+            [
+                { text: "Cancel", style: "cancel" },
+                { text: "Save", onPress: () => savePlant(data) }
+            ]
+        );
+    };
+
+    const savePlant = async (data) => {
+        try {
+            const plant = {
+                name: data.result.classification.suggestions[0]?.name || "Unknown",
+                probability: data.result.classification.suggestions[0]?.probability,
+                image: image,
+            };
+
+            // Retrieve existing plants
+            const storedPlants = await AsyncStorage.getItem('myGarden');
+            const plants = storedPlants ? JSON.parse(storedPlants) : [];
+
+            // Add the new plant
+            plants.push(plant);
+            await AsyncStorage.setItem('myGarden', JSON.stringify(plants));
+
+            Alert.alert("Yay!", "Plant added to your garden!");
+        } catch (error) {
+            console.error("Error saving plant:", error);
         }
     };
 
@@ -69,21 +105,13 @@ export default function PlantLibraryScreen() {
 
             {plantInfo && plantInfo.result && plantInfo.result.classification && (
                 <View style={styles.results}>
-                    {plantInfo.result.is_plant.binary ? (
-                        <>
-                            <Text style={styles.resultText}>This is a plant!</Text>
-                            {plantInfo.result.classification.suggestions.map((suggestion, index) => (
-                                <View key={index}>
-                                    <Text style={styles.resultText}>Name: {suggestion.name || "Unknown"}</Text>
-                                    <Text style={styles.resultText}>
-                                        Probability: {(suggestion.probability * 100).toFixed(2)}%
-                                    </Text>
-                                </View>
-                            ))}
-                        </>
-                    ) : (
-                        <Text style={styles.resultText}>This is not a plant.</Text>
-                    )}
+                    <Text style={styles.resultText}>This is a plant!</Text>
+                    {plantInfo.result.classification.suggestions.map((suggestion, index) => (
+                        <View key={index}>
+                            <Text style={styles.resultText}>Name: {suggestion.name || "Unknown"}</Text>
+                            <Text style={styles.resultText}>Probability: {(suggestion.probability * 100).toFixed(2)}%</Text>
+                        </View>
+                    ))}
                 </View>
             )}
         </View>

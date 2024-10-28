@@ -1,10 +1,10 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 
-export default function CareScheduleScreen() {
+export default function MyGarden() {
   return (
     <View style={styles.container}>
-      <Text style={styles.text}>Care Schedule</Text>
+      <Text style={styles.text}>My Garden</Text>
     </View>
   );
 }

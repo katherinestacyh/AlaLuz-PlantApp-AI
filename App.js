@@ -5,7 +5,7 @@ import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import HomeScreen from './screens/HomeScreen';
 import PlantLibraryScreen from './screens/PlantLibraryScreen';
-import CareScheduleScreen from './screens/CareScheduleScreen';
+import MyGarden from './screens/MyGarden';
 import AIChatScreen from './screens/AIChatScreen';
 import Settings from './screens/Settings';
 
@@ -17,7 +17,7 @@ function App() {
       <Stack.Navigator initialRouteName="Home">
         <Stack.Screen name="Home" component={HomeScreen} />
         <Stack.Screen name="Plant Library" component={PlantLibraryScreen} />
-        <Stack.Screen name="Care Schedule" component={CareScheduleScreen} />
+        <Stack.Screen name="My Garden" component={MyGarden} />
         <Stack.Screen name="AI Chat" component={AIChatScreen} />
         <Stack.Screen name="Settings" component={Settings} />
       </Stack.Navigator>
