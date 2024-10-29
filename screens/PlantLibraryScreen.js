@@ -1,10 +1,8 @@
 import React, { useState } from 'react';
-import { View, Text, Button, Image, ActivityIndicator, StyleSheet } from 'react-native';
+import { View, Text, Button, Image, ActivityIndicator, StyleSheet, Alert } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import * as FileSystem from 'expo-file-system';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { Alert } from 'react-native';
-
 
 export default function PlantLibraryScreen() {
     const [image, setImage] = useState(null);
@@ -21,6 +19,7 @@ export default function PlantLibraryScreen() {
         if (!result.canceled && result.assets && result.assets[0].uri) {
             const imageUri = result.assets[0].uri;
             setImage(imageUri);
+            //console.log("Selected Image URI:", imageUri);
             identifyPlant(imageUri);
         } else {
             console.error("No image selected or invalid URI");
@@ -38,7 +37,7 @@ export default function PlantLibraryScreen() {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'Api-Key': 'bJbO7f4DdsmiHeBhFRtNWqKdqxGT6jrl9YquRuuB2Mj7wahaLf', // Replace with your actual API key
+                    'Api-Key': 'bJbO7f4DdsmiHeBhFRtNWqKdqxGT6jrl9YquRuuB2Mj7wahaLf',
                 },
                 body: JSON.stringify({
                     images: [`data:image/jpeg;base64,${base64Image}`],
@@ -54,7 +53,7 @@ export default function PlantLibraryScreen() {
 
             const data = await response.json();
             setPlantInfo(data);
-            promptSavePlant(data);
+            promptSavePlant(data, uri); // Pass the URI directly here
         } catch (error) {
             console.error("Error identifying plant:", error);
         } finally {
@@ -62,30 +61,30 @@ export default function PlantLibraryScreen() {
         }
     };
 
-    const promptSavePlant = async (data) => {
+    const promptSavePlant = (data, imageUri) => {
         Alert.alert(
             "Save Plant",
             "Would you like to add this plant to your garden?",
             [
                 { text: "Cancel", style: "cancel" },
-                { text: "Save", onPress: () => savePlant(data) }
+                { text: "Save", onPress: () => savePlant(data, imageUri) } // Pass the URI to savePlant
             ]
         );
     };
 
-    const savePlant = async (data) => {
+    const savePlant = async (data, imageUri) => {
         try {
             const plant = {
                 name: data.result.classification.suggestions[0]?.name || "Unknown",
                 probability: data.result.classification.suggestions[0]?.probability,
-                image: image,
+                image: imageUri, // Use the directly passed URI here
             };
 
-            // Retrieve existing plants
+            //console.log("Saving plant data:", plant);
+
             const storedPlants = await AsyncStorage.getItem('myGarden');
             const plants = storedPlants ? JSON.parse(storedPlants) : [];
 
-            // Add the new plant
             plants.push(plant);
             await AsyncStorage.setItem('myGarden', JSON.stringify(plants));
 
