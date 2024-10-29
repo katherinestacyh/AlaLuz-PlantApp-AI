@@ -96,8 +96,8 @@ export default function PlantLibraryScreen() {
 
     return (
         <View style={styles.container}>
-            <Text style={styles.text}>Plant Library</Text>
-            <Button title="Pick an Image" onPress={pickImage} />
+            <Text style={styles.text}>Plant Scanner</Text>
+            <Button title="Click here to scan your plant <3 " onPress={pickImage} />
 
             {image && <Image source={{ uri: image }} style={styles.image} />}
             {loading && <ActivityIndicator size="large" color="#00ff00" />}

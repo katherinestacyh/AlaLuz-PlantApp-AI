@@ -1,73 +1,69 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, Image, FlatList, StyleSheet, Alert } from 'react-native';
+import { View, Text, Image, FlatList, Alert, TouchableOpacity } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { Swipeable } from 'react-native-gesture-handler';
 
 export default function MyGarden() {
-    const [plants, setPlants] = useState([]);
+  const [plants, setPlants] = useState([]);
 
-    useEffect(() => {
-        loadPlants();
-    }, []);
+  useEffect(() => {
+    loadPlants();
+  }, []);
 
-    // Function to load plants from AsyncStorage
-    const loadPlants = async () => {
-        try {
-            const storedPlants = await AsyncStorage.getItem('myGarden');
-            if (storedPlants) {
-                const parsedPlants = JSON.parse(storedPlants);
-                //console.log("Loaded plants:", parsedPlants); // Debug log
-                setPlants(parsedPlants);
-            } else {
-                Alert.alert("No plants found", "Your garden is empty. Add plants from the Plant Library!");
-            }
-        } catch (error) {
-            console.error("Error loading plants:", error);
-        }
-    };
+  const loadPlants = async () => {
+    try {
+      const storedPlants = await AsyncStorage.getItem('myGarden');
+      if (storedPlants) {
+        setPlants(JSON.parse(storedPlants));
+      } else {
+        Alert.alert("No plants found", "Your garden is empty. Add plants from the Plant Library!");
+      }
+    } catch (error) {
+      console.error("Error loading plants:", error);
+    }
+  };
 
-    const renderPlant = ({ item }) => {
-        //console.log("Rendering plant with image URI:", item.image); // Debug log, worked!!!!
-        return (
-            <View style={styles.plantContainer}>
-                <Image source={{ uri: item.image }} style={styles.plantImage} />
-                <View style={styles.plantDetails}>
-                    <Text style={styles.plantName}>{item.name}</Text>
-                    <Text>Probability: {(item.probability * 100).toFixed(2)}%</Text>
-                </View>
-            </View>
-        );
-    };
+  const deletePlant = async (index) => {
+    try {
+      const updatedPlants = [...plants];
+      updatedPlants.splice(index, 1);
+      setPlants(updatedPlants);
+      await AsyncStorage.setItem('myGarden', JSON.stringify(updatedPlants));
+    } catch (error) {
+      console.error("Error deleting plant:", error);
+    }
+  };
 
-    return (
-        <View style={styles.container}>
-            <Text style={styles.title}>My Garden</Text>
-            <FlatList
-                data={plants}
-                renderItem={renderPlant}
-                keyExtractor={(item, index) => index.toString()}
-                contentContainerStyle={styles.listContent}
-            />
+  const renderRightActions = (index) => (
+    <TouchableOpacity
+      onPress={() => deletePlant(index)}
+      className="flex justify-center items-center bg-red-500 w-20 rounded-r-lg"
+    >
+      <Text className="text-white font-semibold">Delete</Text>
+    </TouchableOpacity>
+  );
+
+  const renderPlant = ({ item, index }) => (
+    <Swipeable renderRightActions={() => renderRightActions(index)}>
+      <View className="flex-row items-center bg-white rounded-lg p-4 mb-4 shadow-sm">
+        <Image source={{ uri: item.image }} className="w-16 h-16 rounded-lg mr-4" />
+        <View className="flex-1">
+          <Text className="text-lg font-semibold">{item.name}</Text>
+          <Text className="text-gray-500">Probability: {(item.probability * 100).toFixed(2)}%</Text>
         </View>
-    );
-}
+      </View>
+    </Swipeable>
+  );
 
-const styles = StyleSheet.create({
-    container: { flex: 1, padding: 20, backgroundColor: '#f0f8e0' },
-    title: { fontSize: 28, fontWeight: 'bold', textAlign: 'center', marginBottom: 20 },
-    listContent: { paddingBottom: 20 },
-    plantContainer: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        marginBottom: 20,
-        backgroundColor: '#ffffff',
-        borderRadius: 10,
-        padding: 10,
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.2,
-        shadowRadius: 4,
-    },
-    plantImage: { width: 60, height: 60, borderRadius: 10, marginRight: 10 },
-    plantDetails: { flex: 1 },
-    plantName: { fontSize: 18, fontWeight: 'bold' },
-});
+  return (
+    <View className="flex-1 p-6 bg-green-50">
+      <Text className="text-2xl font-bold text-center mb-6">My Garden</Text>
+      <FlatList
+        data={plants}
+        renderItem={renderPlant}
+        keyExtractor={(item, index) => index.toString()}
+        contentContainerStyle={{ paddingBottom: 20 }}
+      />
+    </View>
+  );
+}

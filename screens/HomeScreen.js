@@ -6,8 +6,8 @@ export default function HomeScreen({ navigation }) {
     <View style={styles.container}>
       <Text style={styles.text}>Welcome to AlaLuz!</Text>
       <Button
-        title="Go to Plant Library"
-        onPress={() => navigation.navigate('Plant Library')}
+        title="Go to Plant Scanner"
+        onPress={() => navigation.navigate('Plant Scanner')}
       />
       <Button
         title="Go to My Garden"
